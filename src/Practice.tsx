@@ -43,10 +43,11 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
   const format = formats[question.type]
   const skill = skillInfo[format.skill]
   const speaking = format.skill === 'speaking'
+  const warmup = question.type === 'personal-introduction'
   const writing = format.skill === 'writing'
   const timed = mode === 'timed'
   const missingWord = question.type === 'select-missing-word'
-  const hasNotes = question.audio && (format.selection || question.type === 'group-discussion' || question.type === 'spoken-summary')
+  const hasNotes = question.audio && (format.selection || question.type === 'retell-lecture' || question.type === 'group-discussion' || question.type === 'spoken-summary')
   const [phase, setPhase] = useState<Phase>('ready')
   const [answer, setAnswer] = useState(() => initialAnswer(question, writing ? store.progress.drafts[question.id] : undefined))
   const [submitted, setSubmitted] = useState(false)
@@ -84,8 +85,8 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
   )
 
   useEffect(() => {
-    store.remember({ questionId: question.id, mode, setId: set?.id })
-  }, [store, question.id, mode, set?.id])
+    if (!warmup) store.remember({ questionId: question.id, mode, setId: set?.id })
+  }, [store, question.id, mode, set?.id, warmup])
 
   useEffect(() => {
     if (!isTimedListening || submitted) return
@@ -103,7 +104,7 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
   const itemIndex = items.findIndex(item => item.id === question.id)
   const sibling = items[itemIndex + 1]
   const skillTypes = typesForSkill(format.skill)
-  const nextType = skillTypes[skillTypes.indexOf(question.type) + 1]
+  const nextType = warmup ? undefined : skillTypes[skillTypes.indexOf(question.type) + 1]
   const setStep = set?.steps.findIndex(step => step.id === question.id) ?? -1
   const nextQuestion = set ? set.steps[setStep + 1] : sibling ?? (nextType && questionsForType(nextType)[0])
   const editable = !submitted && (!timed || phase === 'working')
@@ -128,7 +129,7 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
     audio.stop()
     timer.reset()
     if (speaking) recorder.stop()
-    store.addAttempt(question.id, mode, result)
+    if (!warmup) store.addAttempt(question.id, mode, result)
     setSubmitted(true)
     requestAnimationFrame(() => {
       const heading = document.querySelector<HTMLElement>('#review-title')
@@ -138,7 +139,10 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
   }
 
   return <div className={`skill-${format.skill}`}>
-    <Breadcrumbs links={[{ label: skill.name, href: skillHref(format.skill) }, { label: format.label, href: typeHref(question.type) }]} current={question.title} />
+    <Breadcrumbs links={[
+      { label: skill.name, href: skillHref(format.skill) },
+      ...(warmup ? [] : [{ label: format.label, href: typeHref(question.type) }]),
+    ]} current={question.title} />
     <header className="page-intro">
       <p className="eyebrow" lang="en">{format.label}</p>
       <h1 id="exercise-title" tabIndex={-1} lang="en">{question.title}</h1>
@@ -148,7 +152,10 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
       <div className="exercise-main">
         <section className="panel exercise-panel" aria-label="Bài luyện">
           <div className="exercise-header">
-            <div className="exercise-kicker"><span className="skill-count">{difficultyLabels[question.difficulty]}</span><span>{set ? `Câu ${setStep + 1} / ${set.steps.length} trong bộ` : `Câu ${itemIndex + 1} / ${items.length}`}</span></div>
+            <div className="exercise-kicker">
+              <span className="skill-count">{warmup ? 'Không tính điểm' : difficultyLabels[question.difficulty]}</span>
+              {!warmup && <span>{set ? `Câu ${setStep + 1} / ${set.steps.length} trong bộ` : `Câu ${itemIndex + 1} / ${items.length}`}</span>}
+            </div>
             <nav className="mode-switch" aria-label="Chế độ luyện tập">
               <a className="mode-option" href={questionHref(question.id, 'study', set?.id)} aria-current={!timed ? 'page' : undefined}><BookOpen size={16} aria-hidden="true" /> Học</a>
               <a className="mode-option" href={questionHref(question.id, 'timed', set?.id)} aria-current={timed ? 'page' : undefined}><Clock3 size={16} aria-hidden="true" /> Luyện có giờ</a>
@@ -208,7 +215,7 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
             <button className="button button-secondary" type="button" onClick={retry}><RotateCcw size={16} aria-hidden="true" /> Làm lại bài này</button>
             {nextQuestion ? <a className="button button-primary" href={questionHref(nextQuestion.id, mode, set?.id)}>Sang câu tiếp theo <ArrowRight size={17} aria-hidden="true" /></a>
               : <a className="button button-primary" href={set ? progressHref : skillHref(format.skill)}>{set ? 'Xem tiến độ' : 'Chọn dạng bài khác'} <ArrowRight size={17} aria-hidden="true" /></a>}
-            <button className="button button-ghost" type="button" onClick={() => store.toggleReview(question.id)} aria-pressed={marked}><Bookmark size={16} aria-hidden="true" /> {marked ? 'Đã đánh dấu cần ôn' : 'Đánh dấu cần ôn'}</button>
+            {!warmup && <button className="button button-ghost" type="button" onClick={() => store.toggleReview(question.id)} aria-pressed={marked}><Bookmark size={16} aria-hidden="true" /> {marked ? 'Đã đánh dấu cần ôn' : 'Đánh dấu cần ôn'}</button>}
           </div>
         </section>}
       </div>
@@ -220,11 +227,11 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
           {submitted && <p>{question.hint}</p>}
           <a className="text-link" href={`https://www.pearsonpte.com/pte-academic/test-format/${pearsonSection[format.skill]}/`}>Xem cấu trúc trên Pearson <ArrowRight size={16} aria-hidden="true" /></a>
         </section>
-        <section className="panel">
+        {!warmup && <section className="panel">
           <h2>{set ? set.title : 'Bài cùng dạng'}</h2>
           <ul className="item-list">{(set?.steps ?? items).map(item => <li key={item.id}><a className="item-link" href={questionHref(item.id, mode, set?.id)} aria-current={item.id === question.id ? 'page' : undefined}><span><strong lang="en">{item.title}</strong><small>{set ? skillInfo[formats[item.type].skill].name : difficultyLabels[item.difficulty]}</small></span></a></li>)}</ul>
           {set && <a className="text-link" href={setsHref}>Chọn bộ khác <ArrowRight size={16} aria-hidden="true" /></a>}
-        </section>
+        </section>}
       </aside>
     </div>
   </div>

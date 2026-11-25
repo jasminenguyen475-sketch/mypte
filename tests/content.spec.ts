@@ -1,13 +1,18 @@
 import { expect, test } from '@playwright/test'
 import { readdirSync } from 'node:fs'
-import { questions, questionsForType } from '../src/data'
-import { formats, type QuestionType } from '../src/data/types'
+import { questions, questionsForType, typesForSkill } from '../src/data'
+import { personalIntroduction } from '../src/data/personal-introduction'
+import { formats, skills } from '../src/data/types'
 
-test('The 200 original questions have balanced levels and usable answer data', () => {
-  expect(questions).toHaveLength(200)
-  expect(new Set(questions.map(question => question.id)).size).toBe(200)
+test('The 220 original questions have balanced levels and usable answer data', () => {
+  expect(questions).toHaveLength(220)
+  expect(new Set(questions.map(question => question.id)).size).toBe(220)
 
-  for (const type of Object.keys(formats) as QuestionType[]) {
+  const questionTypes = skills.flatMap(typesForSkill)
+  expect(skills.map(skill => typesForSkill(skill).length)).toEqual([7, 2, 5, 8])
+  expect(questionTypes).toHaveLength(22)
+  expect(questions.map(question => question.id)).not.toContain(personalIntroduction.id)
+  for (const type of questionTypes) {
     const items = questionsForType(type)
     expect(items.map(question => question.difficulty), type).toEqual([
       ...Array(5).fill('foundation'), ...Array(5).fill('exam'),
@@ -18,7 +23,10 @@ test('The 200 original questions have balanced levels and usable answer data', (
   for (const question of questions) {
     const { id, type, audio, correct, options, answers, parts, gapOptions } = question
     const { selection, skill } = formats[type]
-    if (skill === 'listening') expect(audio?.transcript, id).toBeTruthy()
+    if (skill === 'listening' || type === 'retell-lecture' || type === 'answer-short-question') {
+      expect(audio?.transcript, id).toBeTruthy()
+    }
+    if (type === 'retell-lecture' || type === 'answer-short-question') expect(question.model, id).toBeTruthy()
     if (selection) {
       expect(options?.length, id).toBeGreaterThanOrEqual(3)
       if (selection === 'single') expect(correct?.length, id).toBe(1)
@@ -36,7 +44,7 @@ test('The 200 original questions have balanced levels and usable answer data', (
   }
 
   const audioFiles = questions.flatMap(question => question.audio ? [question.audio.file] : [])
-  expect(audioFiles).toHaveLength(110)
+  expect(audioFiles).toHaveLength(130)
   expect(new Set(audioFiles).size).toBe(audioFiles.length)
   expect(audioFiles.sort()).toEqual(readdirSync('public/audio').filter(file => file.endsWith('.mp3')).sort())
 })

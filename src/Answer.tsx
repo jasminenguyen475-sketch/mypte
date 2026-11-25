@@ -61,18 +61,9 @@ export function initialAnswer(question: Question, draft = ''): Answer {
 }
 
 export function hasAnswer(question: Question, answer: Answer): boolean {
-  switch (question.type) {
-    case 'read-aloud':
-    case 'repeat-sentence':
-    case 'describe-image':
-    case 'respond-situation':
-    case 'group-discussion':
-    case 'reorder':
-      return true
-    default:
-      if (typeof answer === 'string') return words(answer).length > 0
-      return answer.some((item) => typeof item === 'number' || Boolean(item.trim()))
-  }
+  if (formats[question.type].skill === 'speaking' || question.type === 'reorder') return true
+  if (typeof answer === 'string') return words(answer).length > 0
+  return answer.some((item) => typeof item === 'number' || Boolean(item.trim()))
 }
 
 type DictationWord =
@@ -514,6 +505,11 @@ const defaultChecks: Partial<Record<Question['type'], string[]>> = {
     'Mình trả lời đủ những điều tình huống yêu cầu.',
     'Mình ít dừng giữa chừng.',
     'Mình nói rõ ràng và lịch sự phù hợp với người nghe.',
+  ],
+  'answer-short-question': [
+    'Mình hiểu câu hỏi trước khi trả lời.',
+    'Mình trả lời ngay bằng một từ hoặc một cụm ngắn.',
+    'Mình nghe lại hoặc đối chiếu câu trả lời với đáp án mẫu.',
   ],
   'group-discussion': [
     'Mình nêu đúng ý chính và quan điểm của từng người.',

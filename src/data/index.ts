@@ -1,3 +1,6 @@
+import { shortQuestionQuestions } from './answer-short-question'
+import { personalIntroduction } from './personal-introduction'
+import { retellLectureQuestions } from './retell-lecture'
 import { extraListeningQuestions } from './listening-extra'
 import { listeningChoiceQuestions } from './listening-choices'
 import { listeningSummaryMissingQuestions } from './listening-summary-missing'
@@ -11,13 +14,14 @@ import { formats, type Question, type QuestionType, type Skill } from './types'
 export const questions = [
   ...oralQuestions, ...writtenQuestions, ...extraSpeakingQuestions, ...extraWritingQuestions,
   ...extraReadingQuestions, ...extraListeningQuestions, ...listeningChoiceQuestions,
-  ...listeningSummaryMissingQuestions,
+  ...listeningSummaryMissingQuestions, ...retellLectureQuestions, ...shortQuestionQuestions,
 ].sort(
   (first, second) => Number(first.difficulty === 'exam') - Number(second.difficulty === 'exam'),
 )
-export const questionsForType = (type: QuestionType) => questions.filter(question => question.type === type)
+export const questionsForType = (type: QuestionType) =>
+  type === personalIntroduction.type ? [personalIntroduction] : questions.filter(question => question.type === type)
 export const typesForSkill = (skill: Skill) =>
-  (Object.keys(formats) as QuestionType[]).filter(type => formats[type].skill === skill)
+  (Object.keys(formats) as QuestionType[]).filter(type => type !== personalIntroduction.type && formats[type].skill === skill)
 
 function makeSet(id: string, title: string, types: QuestionType[], difficulty: Question['difficulty']) {
   return {

@@ -390,9 +390,16 @@ progress::-moz-progress-bar { background: var(--skill, var(--accent)); border-ra
 .type-card h2, .type-card h3 { font-size: 1.15rem; letter-spacing: -.024em; }
 .type-card p { color: var(--muted); font-size: .88rem; }
 .type-card .button, .type-card .item-list { margin-top: auto; }
-.later-panel { margin-top: 15px; }
-.later-panel h2, .progress-grid h2, .history-panel h2 { font-size: 1.18rem; }
-.later-panel ul { margin-bottom: 0; color: var(--muted); line-height: 1.6; }
+.warmup-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.warmup-panel h2, .progress-grid h2, .history-panel h2 { font-size: 1.18rem; }
+.warmup-panel p { margin: 4px 0 0; color: var(--muted); }
 
 .exercise-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .4fr); align-items: start; gap: 17px; }
 .exercise-main, .exercise-sidebar { display: grid; min-width: 0; gap: 15px; }

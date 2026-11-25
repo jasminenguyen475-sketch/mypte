@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { formats, type Mode, type Skill } from './data/types'
 import { questions } from './data'
+import { personalIntroduction } from './data/personal-introduction'
 
 const storageKey = 'pte-tung-buoc.v1'
 const questionById = new Map(questions.map(question => [question.id, question]))
@@ -118,4 +119,4 @@ export function accuracy(attempts: Attempt[]) {
   return total ? Math.round(100 * correct / total) : null
 }
 
-export const getQuestion = (id: string) => questionById.get(id)
+export const getQuestion = (id: string) => id === personalIntroduction.id ? personalIntroduction : questionById.get(id)

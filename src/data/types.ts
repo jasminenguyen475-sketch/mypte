@@ -3,7 +3,8 @@ export type Difficulty = 'foundation' | 'exam'
 export type Mode = 'study' | 'timed'
 
 export type QuestionType =
-  | 'read-aloud' | 'repeat-sentence' | 'describe-image' | 'respond-situation' | 'group-discussion'
+  | 'read-aloud' | 'repeat-sentence' | 'describe-image' | 'retell-lecture' | 'answer-short-question'
+  | 'respond-situation' | 'group-discussion' | 'personal-introduction'
   | 'written-summary' | 'essay'
   | 'reading-dropdown' | 'reading-drag' | 'reorder' | 'choice-single' | 'choice-multiple'
   | 'dictation' | 'listening-blanks' | 'incorrect-words' | 'spoken-summary'
@@ -61,6 +62,18 @@ export const formats: Record<QuestionType, Format> = {
     timing: 'Chuẩn bị 25 giây · Nói 40 giây',
     preparation: 25, seconds: 40,
   },
+  'retell-lecture': {
+    skill: 'speaking', label: 'Retell Lecture',
+    instruction: 'Nghe bài nói, ghi nhanh ý chính và kể lại bằng lời của bạn. Nối các ý thành một câu trả lời mạch lạc.',
+    timing: 'Sau audio: chuẩn bị 10 giây · Nói 40 giây',
+    preparation: 10, seconds: 40,
+  },
+  'answer-short-question': {
+    skill: 'speaking', label: 'Answer Short Question',
+    instruction: 'Nghe câu hỏi và trả lời thành tiếng ngay bằng một từ hoặc một cụm ngắn. Dạng này nằm ở phần Speaking & Writing và đóng góp vào điểm Listening của Pearson.',
+    timing: 'Nói 10 giây ngay sau audio',
+    preparation: 0, seconds: 10,
+  },
   'respond-situation': {
     skill: 'speaking', label: 'Respond to a Situation',
     instruction: 'Nghe tình huống và nói trực tiếp với người trong đề. Trong thi thật, Pearson còn hiển thị tình huống thành văn bản. Ở chế độ có giờ trên trang này, phần văn bản xuất hiện khi xem lại.',
@@ -72,6 +85,12 @@ export const formats: Record<QuestionType, Format> = {
     instruction: 'Nghe ba người thảo luận. Tóm tắt chủ đề, ý kiến quan trọng của từng người và điểm họ đồng ý hoặc khác nhau.',
     timing: 'Sau audio: chuẩn bị 10 giây · Nói 2 phút',
     preparation: 10, seconds: 120,
+  },
+  'personal-introduction': {
+    skill: 'speaking', label: 'Personal Introduction',
+    instruction: 'Giới thiệu ngắn về bản thân để làm quen với phần ghi âm. Đây là phần khởi động không tính điểm.',
+    timing: 'Chuẩn bị 25 giây · Nói 30 giây',
+    preparation: 25, seconds: 30,
   },
   'written-summary': {
     skill: 'writing', label: 'Summarize Written Text',
@@ -153,10 +172,9 @@ export const formats: Record<QuestionType, Format> = {
 export const skills: Skill[] = ['speaking', 'writing', 'reading', 'listening']
 export const difficultyLabels: Record<Difficulty, string> = { foundation: 'Nhập môn', exam: 'Gần dạng thi' }
 
-export const skillInfo: Record<Skill, { name: string; description: string; later?: string[] }> = {
+export const skillInfo: Record<Skill, { name: string; description: string }> = {
   speaking: {
     name: 'Speaking', description: 'Đọc thành tiếng, nghe nhắc lại và trình bày ý mạch lạc.',
-    later: ['Retell Lecture', 'Answer Short Question'],
   },
   writing: { name: 'Writing', description: 'Tóm tắt đoạn văn và viết bài luận bằng tiếng Anh.' },
   reading: { name: 'Reading', description: 'Tìm manh mối, điền từ và nối các ý theo trật tự.' },

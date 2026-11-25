@@ -4,6 +4,7 @@ import {
   GraduationCap, Headphones, House, Lightbulb, Mic, PenLine, Play, RotateCcw, Target,
 } from 'lucide-react'
 import { practiceSets, questions, questionsForType, typesForSkill } from './data'
+import { personalIntroduction } from './data/personal-introduction'
 import { Breadcrumbs } from './Breadcrumbs'
 import { difficultyLabels, formats, skillInfo, skills, type QuestionType, type Skill } from './data/types'
 import { accuracy, completedCount, getQuestion, useProgress } from './progress'
@@ -103,7 +104,7 @@ function Home({ store }: { store: ProgressStore }) {
 }
 
 function SkillPage({ skill }: { skill: Skill }) {
-  const { name, description, later } = skillInfo[skill]
+  const { name, description } = skillInfo[skill]
   const Icon = skillIcons[skill]
   return <div className={`skill-${skill}`}>
     <Breadcrumbs current={name} />
@@ -112,6 +113,13 @@ function SkillPage({ skill }: { skill: Skill }) {
       <h1 lang="en">{name}</h1>
       <p>{description} Chọn một dạng để xem hướng dẫn và làm thử.</p>
     </header>
+    {skill === 'speaking' && <section className="panel warmup-panel" aria-labelledby="warmup-title">
+      <div>
+        <h2 id="warmup-title" lang="en">Personal Introduction</h2>
+        <p>Làm quen với micro và đồng hồ trước khi luyện. Phần này không tính điểm.</p>
+      </div>
+      <a className="button button-secondary" href={questionHref(personalIntroduction.id, 'timed')}>Thử giới thiệu bản thân <ArrowRight size={16} aria-hidden="true" /></a>
+    </section>}
     <div className="type-grid">
       {typesForSkill(skill).map(type => <a className="panel type-card" key={type} href={typeHref(type)}>
         <span className="skill-count">{questionsForType(type).length} bài luyện</span>
@@ -120,7 +128,6 @@ function SkillPage({ skill }: { skill: Skill }) {
         <span className="skill-arrow">Chọn dạng bài <ArrowRight size={16} aria-hidden="true" /></span>
       </a>)}
     </div>
-    {later && <section className="panel later-panel"><h2>Sẽ bổ sung</h2><ul>{later.map(item => <li key={item} lang="en">{item}</li>)}</ul></section>}
   </div>
 }
 
