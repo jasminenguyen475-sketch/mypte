@@ -1,8 +1,18 @@
+import { extraListeningQuestions } from './listening-extra'
+import { listeningChoiceQuestions } from './listening-choices'
+import { listeningSummaryMissingQuestions } from './listening-summary-missing'
+import { extraReadingQuestions } from './reading-extra'
+import { extraSpeakingQuestions } from './speaking-extra'
+import { extraWritingQuestions } from './writing-extra'
 import { oralQuestions } from './oral'
 import { writtenQuestions } from './written'
 import { formats, type Question, type QuestionType, type Skill } from './types'
 
-export const questions = [...oralQuestions, ...writtenQuestions].sort(
+export const questions = [
+  ...oralQuestions, ...writtenQuestions, ...extraSpeakingQuestions, ...extraWritingQuestions,
+  ...extraReadingQuestions, ...extraListeningQuestions, ...listeningChoiceQuestions,
+  ...listeningSummaryMissingQuestions,
+].sort(
   (first, second) => Number(first.difficulty === 'exam') - Number(second.difficulty === 'exam'),
 )
 export const questionsForType = (type: QuestionType) => questions.filter(question => question.type === type)

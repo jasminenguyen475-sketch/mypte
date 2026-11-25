@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test'
+import { questionsForType } from '../src/data'
 
 async function openExercise(page: Page, skill: string, format: string) {
   await page.goto('/')
   await page.getByRole('main').getByRole('link', { name: new RegExp(skill) }).click()
   await page.getByRole('main').getByRole('link', { name: new RegExp(format) }).click()
-  await page.getByRole('link', { name: /Nhập môn/ }).click()
+  await page.getByRole('link', { name: /Nhập môn/ }).first().click()
 }
 
 function submit(page: Page) {
@@ -187,4 +188,73 @@ test('A short timed set can skip a question and resume at the same step', async 
   await page.getByRole('link', { name: 'Sang câu tiếp theo' }).click()
   await expect(page.getByRole('heading', { name: 'Rain Gardens' })).toBeVisible()
   await expect(page.getByText('Câu 3 / 4 trong bộ')).toBeVisible()
+})
+
+test('Listening lists eight formats and ten questions per format', async ({ page }) => {
+  await page.goto('/#/ky-nang/listening')
+  const formats = page.locator('.type-grid').getByRole('link')
+  await expect(formats).toHaveCount(8)
+  await expect(page.getByText('10 bài luyện', { exact: true })).toHaveCount(8)
+  await expect(page.getByRole('heading', { name: 'Sẽ bổ sung' })).toHaveCount(0)
+  await page.locator('.type-grid').getByRole('link', { name: /Select Missing Word/ }).click()
+  await expect(page.locator('.format-panel .item-list').getByRole('listitem')).toHaveCount(10)
+})
+
+for (const type of [
+  'listening-choice-single', 'listening-choice-multiple', 'highlight-correct-summary', 'select-missing-word',
+] as const) {
+  test(`${type} plays once in timed mode and grades the chosen options`, async ({ page }) => {
+    const question = questionsForType(type)[0]
+    const audio = question.audio!
+    const choices = question.options!
+    const correct = question.correct!
+    const multiple = type === 'listening-choice-multiple'
+
+    if (type === 'select-missing-word') {
+      await page.goto('/#/bai/' + question.id)
+      await expect(page.getByRole('button', { name: 'Xem transcript' })).toHaveCount(0)
+    }
+    await page.goto('/#/bai/' + question.id + '?mode=timed')
+    const inputs = page.getByRole(multiple ? 'checkbox' : 'radio')
+    await expect(inputs).toHaveCount(choices.length)
+    await expect(inputs.first()).toBeDisabled()
+
+    // Use a short bundled clip to test the playback UI without waiting for a full lecture.
+    await page.route('**/audio/' + audio.file, route =>
+      route.fulfill({ path: 'public/audio/l-dictation-01.mp3', contentType: 'audio/mpeg' }))
+    await page.getByRole('button', { name: 'Phát audio' }).click()
+    await expect(page.getByRole('button', { name: 'Đã phát một lần' })).toBeDisabled({ timeout: 12_000 })
+    await expect(page.locator('.transcript')).toHaveCount(0)
+    await expect(submit(page)).toBeDisabled()
+    for (const index of correct) await inputs.nth(index).check()
+    if (multiple) {
+      const wrong = choices.findIndex((_, index) => !correct.includes(index))
+      await inputs.nth(wrong).check()
+    }
+    await submit(page).click()
+    const result = feedback(page)
+    await expect(result.getByText(`${correct.length - Number(multiple)}/${correct.length}`, { exact: true })).toBeVisible()
+    await expect(result.getByRole('heading', { name: 'Giải thích đáp án' })).toBeVisible()
+    if (multiple) await expect(result.getByText('Chọn sai', { exact: true })).toBeVisible()
+    await expect(page.locator('.review-panel .transcript')).toContainText(audio.transcript)
+  })
+}
+
+test('The expanded bank keeps previously saved progress and Writing drafts', async ({ page }) => {
+  const draft = 'Outdoor blinds and early ventilation helped classrooms stay cooler.'
+  await page.addInitScript(savedDraft => {
+    localStorage.setItem('pte-tung-buoc.v1', JSON.stringify({
+      attempts: [{ questionId: 'reading-dropdown-01', mode: 'study', at: 1700000000000, result: { correct: 2, total: 3 } }],
+      drafts: { 'writing-summary-01': savedDraft },
+      review: ['reading-dropdown-01'],
+      last: { questionId: 'writing-summary-01', mode: 'study' },
+    }))
+  }, draft)
+  await page.goto('/')
+  await expect(page.getByRole('progressbar')).toHaveAttribute('value', '1')
+  await expect(page.getByRole('progressbar')).toHaveAttribute('max', '200')
+  await page.getByRole('link', { name: 'Tiếp tục luyện' }).click()
+  await expect(page.getByRole('textbox', { name: 'Câu trả lời của bạn' })).toHaveValue(draft)
+  await progress(page).click()
+  await expect(page.locator('.history-list').getByText('Rain Gardens')).toBeVisible()
 })

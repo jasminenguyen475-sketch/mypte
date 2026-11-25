@@ -7,6 +7,7 @@ export type QuestionType =
   | 'written-summary' | 'essay'
   | 'reading-dropdown' | 'reading-drag' | 'reorder' | 'choice-single' | 'choice-multiple'
   | 'dictation' | 'listening-blanks' | 'incorrect-words' | 'spoken-summary'
+  | 'listening-choice-single' | 'listening-choice-multiple' | 'highlight-correct-summary' | 'select-missing-word'
 
 export interface Question {
   id: string
@@ -38,6 +39,7 @@ interface Format {
   timing: string
   seconds: number
   preparation?: number
+  selection?: 'single' | 'multiple'
 }
 
 export const formats: Record<QuestionType, Format> = {
@@ -97,12 +99,12 @@ export const formats: Record<QuestionType, Format> = {
     timing: '2 phút gợi ý · Pearson tính giờ chung cho Reading', seconds: 120,
   },
   'choice-single': {
-    skill: 'reading', label: 'Multiple Choice, Single Answer',
+    skill: 'reading', label: 'Multiple Choice, Single Answer', selection: 'single',
     instruction: 'Đọc đoạn văn và chọn một đáp án có bằng chứng rõ nhất.',
     timing: '2 phút gợi ý · Pearson tính giờ chung cho Reading', seconds: 120,
   },
   'choice-multiple': {
-    skill: 'reading', label: 'Multiple Choice, Multiple Answers',
+    skill: 'reading', label: 'Multiple Choice, Multiple Answers', selection: 'multiple',
     instruction: 'Chọn tất cả đáp án có bằng chứng trong bài. Kiểm tra từng lựa chọn vì chọn sai làm giảm kết quả luyện.',
     timing: '2 phút gợi ý · Pearson tính giờ chung cho Reading', seconds: 120,
   },
@@ -119,6 +121,26 @@ export const formats: Record<QuestionType, Format> = {
   'incorrect-words': {
     skill: 'listening', label: 'Highlight Incorrect Words',
     instruction: 'Vừa nghe vừa theo dõi đoạn văn hiển thị. Chọn những từ khác với từ trong audio.',
+    timing: '2 phút gợi ý, tính từ lúc bắt đầu audio', seconds: 120,
+  },
+  'listening-choice-single': {
+    skill: 'listening', label: 'Multiple Choice, Single Answer', selection: 'single',
+    instruction: 'Đọc câu hỏi, nghe đoạn ghi âm rồi chọn đáp án phù hợp nhất với nội dung.',
+    timing: '2 phút gợi ý, tính từ lúc bắt đầu audio', seconds: 120,
+  },
+  'listening-choice-multiple': {
+    skill: 'listening', label: 'Multiple Choice, Multiple Answers', selection: 'multiple',
+    instruction: 'Nghe và ghi nhanh các chi tiết quan trọng. Chọn tất cả phương án có bằng chứng trong bài nghe.',
+    timing: '3 phút gợi ý, tính từ lúc bắt đầu audio', seconds: 180,
+  },
+  'highlight-correct-summary': {
+    skill: 'listening', label: 'Highlight Correct Summary', selection: 'single',
+    instruction: 'Nghe và ghi ý chính, rồi chọn đoạn tóm tắt bao quát nội dung và giữ đúng các chi tiết quan trọng.',
+    timing: '2 phút 30 giây gợi ý, tính từ lúc bắt đầu audio', seconds: 150,
+  },
+  'select-missing-word': {
+    skill: 'listening', label: 'Select Missing Word', selection: 'single',
+    instruction: 'Tiếng bíp thay cho từ hoặc cụm từ cuối. Dựa vào mạch ý trước đó để chọn cách kết thúc phù hợp nhất.',
     timing: '2 phút gợi ý, tính từ lúc bắt đầu audio', seconds: 120,
   },
   'spoken-summary': {
@@ -140,6 +162,5 @@ export const skillInfo: Record<Skill, { name: string; description: string; later
   reading: { name: 'Reading', description: 'Tìm manh mối, điền từ và nối các ý theo trật tự.' },
   listening: {
     name: 'Listening', description: 'Nghe bắt từ khoá, chép chính tả và tóm tắt ý chính.',
-    later: ['Multiple Choice, Multiple Answers', 'Highlight Correct Summary', 'Multiple Choice, Single Answer', 'Select Missing Word'],
   },
 }

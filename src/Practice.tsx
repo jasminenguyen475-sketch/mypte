@@ -45,6 +45,8 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
   const speaking = format.skill === 'speaking'
   const writing = format.skill === 'writing'
   const timed = mode === 'timed'
+  const missingWord = question.type === 'select-missing-word'
+  const hasNotes = question.audio && (format.selection || question.type === 'group-discussion' || question.type === 'spoken-summary')
   const [phase, setPhase] = useState<Phase>('ready')
   const [answer, setAnswer] = useState(() => initialAnswer(question, writing ? store.progress.drafts[question.id] : undefined))
   const [submitted, setSubmitted] = useState(false)
@@ -170,10 +172,10 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
           {question.audio && <div className="media-box">
             <p className="media-label"><Headphones size={17} aria-hidden="true" /> Audio luyện tập · giọng tổng hợp tiếng Anh</p>
             {!submitted && <PracticeAudioControls audio={audio} timed={timed} disabled={phase === 'expired'} />}
-            {!submitted && !timed && <button className="button button-ghost" type="button" onClick={() => setShowTranscript(value => !value)} aria-expanded={showTranscript}>
+            {!submitted && !timed && !missingWord && <button className="button button-ghost" type="button" onClick={() => setShowTranscript(value => !value)} aria-expanded={showTranscript}>
               {showTranscript ? 'Ẩn transcript' : 'Xem transcript'}
             </button>}
-            {!submitted && !timed && showTranscript && <div className="transcript"><p lang="en">{question.audio.transcript}</p></div>}
+            {!submitted && !timed && !missingWord && showTranscript && <div className="transcript"><p lang="en">{question.audio.transcript}</p></div>}
             {!submitted && !timed && phase === 'ready' && <button className="button button-ghost" type="button" onClick={speaking ? startSpeaking : startAnswer} disabled={!audio.hasPlayed || audio.state !== 'played'}>
               <Clock3 size={16} aria-hidden="true" /> Dùng đồng hồ
             </button>}
@@ -183,7 +185,7 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
             {(speaking || writing) && question.passage && <div className="reading-passage" lang="en">{question.passage}</div>}
             {question.chart && <DescribeChart chart={question.chart} />}
           </>}
-          {!submitted && question.audio && (question.type === 'group-discussion' || question.type === 'spoken-summary') && <div className="exercise-notes">
+          {!submitted && hasNotes && <div className="exercise-notes">
             <label htmlFor="scratch-notes">Ghi chú khi nghe</label>
             <textarea id="scratch-notes" rows={3} disabled={timed && (phase === 'expired' || (audio.state !== 'playing' && !audio.hasPlayed))} />
           </div>}
@@ -201,7 +203,7 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
         {submitted && <section className="panel review-panel" aria-labelledby="review-title">
           <h2 id="review-title" tabIndex={-1}>Xem lại bài làm</h2>
           <AnswerFeedback question={question} answer={answer} />
-          {question.audio && <details className="transcript" open><summary>Transcript tiếng Anh</summary><p lang="en">{question.audio.transcript}</p></details>}
+          {question.audio && <details className="transcript" open><summary>{missingWord ? 'Transcript tiếng Anh có phần kết hoàn chỉnh' : 'Transcript tiếng Anh'}</summary><p lang="en">{question.audio.transcript}</p></details>}
           <div className="exercise-actions">
             <button className="button button-secondary" type="button" onClick={retry}><RotateCcw size={16} aria-hidden="true" /> Làm lại bài này</button>
             {nextQuestion ? <a className="button button-primary" href={questionHref(nextQuestion.id, mode, set?.id)}>Sang câu tiếp theo <ArrowRight size={17} aria-hidden="true" /></a>

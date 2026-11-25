@@ -1,5 +1,5 @@
 import { Fragment, useId, useState } from 'react'
-import type { Question } from './data/types'
+import { formats, type Question } from './data/types'
 
 export type Answer = string | string[] | number[]
 export type PracticeScore = { correct: number; total: number }
@@ -42,14 +42,13 @@ function normalized(value: string): string {
 }
 
 export function initialAnswer(question: Question, draft = ''): Answer {
+  if (formats[question.type].selection) return []
   switch (question.type) {
     case 'written-summary':
     case 'essay':
       return draft
     case 'reorder':
       return question.parts?.map((_, index) => index) ?? []
-    case 'choice-single':
-    case 'choice-multiple':
     case 'incorrect-words':
       return []
     case 'reading-dropdown':
@@ -169,6 +168,7 @@ function orderedPair(first: number, second: number, expected: number[]): boolean
 export function evaluateAnswer(question: Question, answer: Answer): PracticeScore | null {
   const expected = question.correct ?? []
   const selected = numberAnswers(answer)
+  if (formats[question.type].selection) return picksScore(selected, expected)
 
   switch (question.type) {
     case 'reading-dropdown':
@@ -181,8 +181,6 @@ export function evaluateAnswer(question: Question, answer: Answer): PracticeScor
         total: targets.length,
       }
     }
-    case 'choice-single':
-    case 'choice-multiple':
     case 'incorrect-words':
       return picksScore(selected, expected)
     case 'reorder':
@@ -260,7 +258,7 @@ function GapEditor({ question, answer, onChange, disabled }: AnswerEditorProps) 
 function ChoiceEditor({ question, answer, onChange, disabled }: AnswerEditorProps) {
   const group = useId()
   const selected = numberAnswers(answer)
-  const multiple = question.type === 'choice-multiple'
+  const multiple = formats[question.type].selection === 'multiple'
 
   function update(index: number) {
     if (!multiple) {
@@ -369,14 +367,12 @@ function ResponseEditor({ question, answer, onChange, disabled }: AnswerEditorPr
 
 export function AnswerEditor(props: AnswerEditorProps) {
   const { question } = props
+  if (formats[question.type].selection) return <div className="answer-editor"><ChoiceEditor {...props} /></div>
   switch (question.type) {
     case 'reading-dropdown':
     case 'reading-drag':
     case 'listening-blanks':
       return <div className="answer-editor"><GapEditor {...props} /></div>
-    case 'choice-single':
-    case 'choice-multiple':
-      return <div className="answer-editor"><ChoiceEditor {...props} /></div>
     case 'reorder':
       return <div className="answer-editor"><ReorderEditor {...props} /></div>
     case 'incorrect-words':
@@ -427,7 +423,7 @@ function ChoiceFeedback({ question, answer }: Pick<AnswerEditorProps, 'question'
         return <AnswerDetail key={index} right={picked === target} status={status} actual={option} clue={question.clues?.[index]} />
       })}
     </ul>
-    {question.type === 'choice-multiple' && <p>Mỗi lựa chọn sai trừ một lựa chọn đúng trong kết quả luyện tập, tối thiểu là 0.</p>}
+    {formats[question.type].selection === 'multiple' && <p>Mỗi lựa chọn sai trừ một lựa chọn đúng trong kết quả luyện tập, tối thiểu là 0.</p>}
   </>
 }
 
@@ -559,14 +555,12 @@ function WritingReview({ question, answer }: Pick<AnswerEditorProps, 'question' 
 }
 
 function ScoreDetails({ question, answer }: Pick<AnswerEditorProps, 'question' | 'answer'>) {
+  if (formats[question.type].selection) return <ChoiceFeedback question={question} answer={answer} />
   switch (question.type) {
     case 'reading-dropdown':
     case 'reading-drag':
     case 'listening-blanks':
       return <GapFeedback question={question} answer={answer} />
-    case 'choice-single':
-    case 'choice-multiple':
-      return <ChoiceFeedback question={question} answer={answer} />
     case 'reorder':
       return <ReorderFeedback question={question} answer={answer} />
     case 'incorrect-words':
