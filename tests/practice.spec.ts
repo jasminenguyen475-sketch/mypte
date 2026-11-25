@@ -112,20 +112,31 @@ test('Reading gives specific feedback and keeps results after reloading', async 
   await expect(page.getByRole('main').getByText('Rain Gardens')).toHaveCount(0)
 })
 
-test('Listening allows retry after a broken file and uses one play in timed mode', async ({ page }) => {
-  await openExercise(page, 'Listening', 'Write from Dictation')
-  await page.getByRole('link', { name: 'Luyện có giờ' }).click()
-  const transcript = 'The library closes early during the winter break.'
+test('Listening downloads the whole clip, recovers from a failed download and limits timed playback', async ({ page }) => {
+  const question = questionsForType('dictation')[0]
+  const transcript = question.audio!.transcript
+  const audioPath = '**/audio/' + question.audio!.file + '*'
+  let failDownload = true
+  let downloads = 0
+  await page.route(audioPath, route => {
+    downloads += 1
+    expect(route.request().method()).toBe('GET')
+    expect(route.request().headers()['range']).toBeUndefined()
+    return failDownload ? route.abort() : route.continue()
+  })
+  await page.goto('/#/bai/' + question.id + '?mode=timed')
   await expect(page.getByText(transcript, { exact: true })).toHaveCount(0)
-  const audioPath = '**/audio/l-dictation-01.mp3'
-  await page.route(audioPath, route => route.abort())
-  await page.getByRole('button', { name: 'Phát audio' }).click()
   await expect(page.getByRole('alert')).toContainText('không được tính là một lượt làm sai')
   await expect(submit(page)).toBeDisabled()
 
-  await page.unroute(audioPath)
-  await page.getByRole('button', { name: 'Thử phát lại' }).click()
+  failDownload = false
+  await page.getByRole('button', { name: 'Tải lại audio' }).click()
+  const play = page.getByRole('button', { name: 'Phát audio' })
+  await expect(play).toBeEnabled()
+  await expect(page.getByRole('timer')).toHaveCount(0)
+  await play.click()
   await expect(page.getByRole('button', { name: 'Đã phát một lần' })).toBeDisabled({ timeout: 12_000 })
+  expect(downloads).toBe(2)
   await expect(page.getByText(transcript, { exact: true })).toHaveCount(0)
   await page.getByRole('textbox', { name: 'Câu bạn nghe được' }).fill('The library closses early during winter break today.')
   await submit(page).click()
@@ -216,6 +227,9 @@ for (const type of [
     const correct = question.correct!
     const multiple = type === 'listening-choice-multiple'
 
+    // Use a short bundled clip to test the playback UI without waiting for a full lecture.
+    await page.route('**/audio/' + audio.file + '*', route =>
+      route.fulfill({ path: 'public/audio/l-dictation-01.mp3', contentType: 'audio/mpeg' }))
     if (type === 'select-missing-word') {
       await page.goto('/#/bai/' + question.id)
       await expect(page.getByRole('button', { name: 'Xem transcript' })).toHaveCount(0)
@@ -225,9 +239,6 @@ for (const type of [
     await expect(inputs).toHaveCount(choices.length)
     await expect(inputs.first()).toBeDisabled()
 
-    // Use a short bundled clip to test the playback UI without waiting for a full lecture.
-    await page.route('**/audio/' + audio.file, route =>
-      route.fulfill({ path: 'public/audio/l-dictation-01.mp3', contentType: 'audio/mpeg' }))
     await page.getByRole('button', { name: 'Phát audio' }).click()
     await expect(page.getByRole('button', { name: 'Đã phát một lần' })).toBeDisabled({ timeout: 12_000 })
     await expect(page.locator('.transcript')).toHaveCount(0)
@@ -269,11 +280,11 @@ test('Retell Lecture prepares for ten seconds after the audio and then allows fo
   const question = questionsForType('retell-lecture')[0]
   const audio = question.audio!
   await page.clock.install()
+  await page.route('**/audio/' + audio.file + '*', route =>
+    route.fulfill({ path: 'public/audio/l-dictation-01.mp3', contentType: 'audio/mpeg' }))
   await page.goto('/#/bai/' + question.id + '?mode=timed')
   await expect(page.getByRole('textbox', { name: 'Ghi chú khi nghe' })).toBeDisabled()
   await expect(submit(page)).toBeDisabled()
-  await page.route('**/audio/' + audio.file, route =>
-    route.fulfill({ path: 'public/audio/l-dictation-01.mp3', contentType: 'audio/mpeg' }))
   await page.getByRole('button', { name: 'Phát audio' }).click()
   await expect(page.getByRole('timer')).toHaveText('00:10', { timeout: 12_000 })
   await expect(page.getByRole('button', { name: 'Đã phát một lần' })).toBeDisabled()

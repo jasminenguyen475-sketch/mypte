@@ -70,15 +70,61 @@ export function useCountdown() {
 type AudioState = 'idle' | 'loading' | 'playing' | 'played' | 'error'
 
 export function usePracticeAudio(src: string | undefined, timed: boolean, onComplete?: () => void) {
-  const [state, setState] = useState<AudioState>('idle')
+  const [state, setState] = useState<AudioState>(src ? 'loading' : 'idle')
   const [hasPlayed, setHasPlayed] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadAttempt, setLoadAttempt] = useState(0)
+  const prepared = useRef<string | null>(null)
   const active = useRef<{ dispose: () => void } | null>(null)
   const played = useRef(false)
   const completion = useRef(onComplete)
 
   useEffect(() => { completion.current = onComplete }, [onComplete])
-  useEffect(() => () => { active.current?.dispose() }, [src, timed])
+
+  useEffect(() => {
+    if (!src) return
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 30000)
+    let current = true
+    let objectUrl: string | null = null
+
+    setState('loading')
+    setError(null)
+    // Download complete clips because the host does not serve media byte ranges.
+    void (async () => {
+      try {
+        const response = await fetch(src, { signal: controller.signal })
+        if (!response.ok) throw new Error('Audio request failed')
+        const blob = await response.blob()
+        if (!current) return
+        if (!blob.size || (blob.type && !blob.type.startsWith('audio/') && blob.type !== 'application/octet-stream')) {
+          throw new Error('Invalid audio response')
+        }
+        objectUrl = URL.createObjectURL(blob.slice(0, blob.size, 'audio/mpeg'))
+        prepared.current = objectUrl
+        setState(played.current ? 'played' : 'idle')
+      } catch {
+        if (!current) return
+        setError(controller.signal.aborted
+          ? 'Đã chờ quá lâu để tải audio. Hãy kiểm tra kết nối rồi tải lại.'
+          : 'Không tải được audio. Bạn có thể tải lại hoặc chọn bài khác.')
+        setState('error')
+      } finally {
+        window.clearTimeout(timeout)
+      }
+    })()
+
+    return () => {
+      current = false
+      window.clearTimeout(timeout)
+      controller.abort()
+      active.current?.dispose()
+      prepared.current = null
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [src, timed, loadAttempt])
+
+  const retry = useCallback(() => setLoadAttempt(attempt => attempt + 1), [])
 
   const stop = useCallback(() => {
     if (!active.current) return
@@ -87,7 +133,8 @@ export function usePracticeAudio(src: string | undefined, timed: boolean, onComp
   }, [])
 
   const play = useCallback(() => {
-    if (!src || active.current || (timed && played.current)) return
+    const objectUrl = prepared.current
+    if (!objectUrl || active.current || (timed && played.current)) return
 
     const element = new Audio()
     let watchdog: number | null = null
@@ -103,7 +150,6 @@ export function usePracticeAudio(src: string | undefined, timed: boolean, onComp
         element.onerror = null
         element.onplaying = null
         element.onwaiting = null
-        element.onstalled = null
         element.pause()
         element.removeAttribute('src')
         element.load()
@@ -119,7 +165,7 @@ export function usePracticeAudio(src: string | undefined, timed: boolean, onComp
     function watchForStall() {
       clearWatchdog()
       watchdog = window.setTimeout(() => {
-        fail('Đã chờ quá lâu để phát audio. Hãy kiểm tra kết nối và thử lại.')
+        fail('Không phát được audio. Bạn có thể tải lại hoặc chọn bài khác.')
       }, 12000)
     }
 
@@ -132,9 +178,6 @@ export function usePracticeAudio(src: string | undefined, timed: boolean, onComp
       setState('playing')
     }
     element.onwaiting = watchForStall
-    element.onstalled = () => {
-      if (element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) watchForStall()
-    }
     element.onended = () => {
       if (active.current !== playback) return
       playback.dispose()
@@ -143,13 +186,13 @@ export function usePracticeAudio(src: string | undefined, timed: boolean, onComp
       setState('played')
       completion.current?.()
     }
-    element.onerror = () => fail('Audio không phát được. Bạn có thể thử lại hoặc chọn bài khác.')
-    element.src = src
+    element.onerror = () => fail('Audio không phát được. Bạn có thể tải lại hoặc chọn bài khác.')
+    element.src = objectUrl
     watchForStall()
-    void element.play().catch(() => fail('Trình duyệt chưa phát được audio. Kiểm tra âm lượng và thử lại.'))
-  }, [src, timed])
+    void element.play().catch(() => fail('Trình duyệt chưa phát được audio. Hãy tải lại và thử lại.'))
+  }, [timed])
 
-  return { state, hasPlayed, error, play, stop }
+  return { state, hasPlayed, error, play, retry, stop }
 }
 
 export type PracticeAudio = ReturnType<typeof usePracticeAudio>
@@ -164,14 +207,14 @@ export function PracticeAudioControls({
   const busy = audio.state === 'loading' || audio.state === 'playing'
   const onlyOnce = timed && audio.hasPlayed
   let label = 'Phát audio'
-  if (audio.state === 'error') label = 'Thử phát lại'
+  if (audio.state === 'error') label = 'Tải lại audio'
   else if (audio.hasPlayed && !onlyOnce) label = 'Nghe lại'
   else if (onlyOnce) label = 'Đã phát một lần'
 
   return (
     <div className="media-panel">
       <div className="media-actions">
-        <button className="button secondary" type="button" onClick={audio.play} disabled={disabled || busy || onlyOnce}>
+        <button className="button secondary" type="button" onClick={audio.state === 'error' ? audio.retry : audio.play} disabled={disabled || busy || onlyOnce}>
           {label}
         </button>
         <span className="media-status" role="status">

@@ -53,6 +53,8 @@ Ví dụ thêm mục Read Aloud vào `oralQuestions`:
 
 Với câu có đáp án, điền đúng các trường của dạng bài đang sao chép. Các chỉ số trong `correct` bắt đầu từ `0`. Với câu có âm thanh, lưu tệp MP3 tự tạo ở `public/audio/` rồi điền `audio.file` bằng tên tệp và `audio.transcript` bằng nội dung đọc. Audio trong bản này dùng giọng tổng hợp tiếng Anh, tạo từ kịch bản tự viết và lưu cùng mã nguồn. Với Select Missing Word, bản ghi kết thúc bằng tiếng bíp thay cho đáp án, còn transcript hoàn chỉnh chỉ hiển thị khi xem lại bài.
 
+Các bản đọc dùng định dạng MP3 mono, 44,1 kHz và 64 kbps. Website tải xong tệp của bài đang mở trước khi phát. Các bản đọc được tạo ngoại tuyến bằng Piper. Dữ liệu giọng Joe và Mike của OHF Voice dùng giấy phép CC0. Giọng Cori Samuel dùng bộ dữ liệu Hi-Fi TTS của NVIDIA theo giấy phép CC BY 4.0. [Piper](https://github.com/OHF-Voice/piper1-gpl) · [OHF Voice](https://github.com/OHF-Voice/voice-datasets) · [Hi-Fi TTS](https://www.openslr.org/109/)
+
 Sau khi thêm, chạy `npm run build`. Mở câu mới ở cả hai chế độ và kiểm tra đáp án hoặc mẫu sau khi nộp.
 
 ## Dữ liệu trên thiết bị

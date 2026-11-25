@@ -79,7 +79,7 @@ function Exercise({ question, mode, store, set, retry }: PracticeProps & { retry
   }
 
   const audio = usePracticeAudio(
-    question.audio && `${import.meta.env.BASE_URL}audio/${question.audio.file}`,
+    question.audio && `${import.meta.env.BASE_URL}audio/${question.audio.file}?v=2`,
     timed,
     () => { if (timed && speaking) startSpeaking() },
   )
