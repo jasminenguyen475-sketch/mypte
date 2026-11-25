@@ -1,8 +1,8 @@
 # PTE Từng Bước
 
-Website tự học PTE Academic với bốn khu luyện Speaking, Writing, Reading và Listening. Bắt đầu bằng các bài nền tảng, rồi chuyển sang bài gần dạng thi khi đã quen với thao tác và cách xem lại lỗi. Ngân hàng có 220 câu tự viết, chia đều thành 10 câu cho mỗi dạng bài trong PTE Academic. Speaking có bảy dạng bài trả lời bằng lời nói và thêm một bài Personal Introduction để làm quen, không tính vào tiến độ. Lộ trình bốn tuần có thể điều chỉnh theo lịch học. Mỗi buổi có thể luyện 15–25 phút.
+Website tự học PTE Academic với bốn khu luyện Speaking, Writing, Reading và Listening. Bắt đầu bằng các bài nền tảng, rồi chuyển sang bài gần dạng thi khi đã quen với thao tác và cách xem lại lỗi. Ngân hàng có 220 câu tự viết, chia đều thành 10 câu cho mỗi dạng bài trong PTE Academic. Speaking có bảy dạng bài trả lời bằng lời nói và thêm một bài Personal Introduction để làm quen, không tính vào tiến độ. Lộ trình ba tháng có thể điều chỉnh theo lịch học. Mỗi buổi có thể luyện 15–25 phút.
 
-Ở tuần 4, chọn **Bộ nhập môn** hoặc **Bộ gần dạng thi**. Mỗi bộ có một câu mỗi kỹ năng và mặc định mở ở chế độ Luyện có giờ. Bạn có thể bỏ qua từng câu, đổi chế độ hoặc tiếp tục từ trang chủ.
+Tháng đầu dùng câu nhập môn để làm quen với bốn kỹ năng. Tháng thứ hai chuyển dần sang câu gần dạng thi và ôn lại lỗi. Trong tháng thứ ba, chọn **Bộ nhập môn** hoặc **Bộ gần dạng thi**. Mỗi bộ có một câu mỗi kỹ năng và mặc định mở ở chế độ Luyện có giờ. Bạn có thể bỏ qua từng câu, đổi chế độ hoặc tiếp tục từ trang chủ.
 
 Trang luyện tập độc lập, không liên kết với Pearson. Kết quả luyện tập không phải điểm thi chính thức. Mục tiêu overall 65 và độ chính xác khi luyện được hiển thị riêng.
 

@@ -23,11 +23,22 @@ function jumpTo(event: MouseEvent<HTMLAnchorElement>, id: string) {
   target?.scrollIntoView({ block: 'start' })
 }
 
-const weeks = [
-  { name: 'Làm quen các dạng bài', detail: 'Đọc hướng dẫn và thử các câu nhập môn ở cả bốn kỹ năng.', label: 'Bắt đầu', href: questionHref(suggestedQuestion.id) },
-  { name: 'Luyện đều bốn kỹ năng', detail: 'Đổi kỹ năng mỗi buổi hoặc ghép hai kỹ năng trong một buổi.', label: 'Chọn kỹ năng', href: '#ky-nang' },
-  { name: 'Ôn lỗi lặp lại', detail: 'Mở bài đã đánh dấu và chọn một lỗi cụ thể để sửa trước.', label: 'Mở bài cần ôn', href: progressHref },
-  { name: 'Làm một nhóm bài ngắn', detail: 'Chọn 3–4 bài ở nhiều kỹ năng và dùng chế độ Luyện có giờ.', label: 'Chọn bộ luyện', href: setsHref },
+const months = [
+  {
+    name: 'Làm quen và xây nền',
+    detail: 'Thử câu nhập môn ở cả bốn kỹ năng. Dùng chế độ Học để xem gợi ý và lời giải.',
+    label: 'Bắt đầu', href: questionHref(suggestedQuestion.id),
+  },
+  {
+    name: 'Luyện đều và sửa lỗi',
+    detail: 'Luân phiên các kỹ năng, thử câu gần dạng thi và làm lại những bài đã đánh dấu cần ôn.',
+    label: 'Mở bài cần ôn', href: progressHref,
+  },
+  {
+    name: 'Luyện có giờ',
+    detail: 'Làm các bộ luyện ngắn có giờ. Sau mỗi bộ, xem lại lỗi lặp lại để chọn bài ôn cho buổi sau.',
+    label: 'Chọn bộ luyện', href: setsHref,
+  },
 ]
 
 function Home({ store }: { store: ProgressStore }) {
@@ -83,12 +94,12 @@ function Home({ store }: { store: ProgressStore }) {
 
     <div className="dashboard-grid">
       <section className="panel" aria-labelledby="plan-title">
-        <div className="section-title-row"><div><h2 id="plan-title">Lộ trình 4 tuần</h2><p>Gợi ý 15–25 phút mỗi buổi. Bạn có thể bỏ qua một bước hoặc chọn bài khác.</p></div></div>
-        <ol className="week-list">
-          {weeks.map((week, index) => <li className="week-row" key={week.name}>
-            <span className="week-index">Tuần {index + 1}</span>
-            <span className="week-info"><strong>{week.name}</strong><small>{week.detail}</small></span>
-            <a className="week-action" href={week.href} onClick={week.href === '#ky-nang' ? event => jumpTo(event, 'skills-title') : undefined}>{week.label} <ChevronRight size={15} aria-hidden="true" /></a>
+        <div className="section-title-row"><div><h2 id="plan-title">Lộ trình 3 tháng</h2><p>Gợi ý 15–25 phút mỗi buổi. Bạn có thể điều chỉnh theo lịch học.</p></div></div>
+        <ol className="plan-list">
+          {months.map((month, index) => <li className="plan-row" key={month.name}>
+            <span className="plan-month">Tháng {index + 1}</span>
+            <span className="plan-info"><strong>{month.name}</strong><small>{month.detail}</small></span>
+            <a className="plan-action" href={month.href}>{month.label} <ChevronRight size={15} aria-hidden="true" /></a>
           </li>)}
         </ol>
       </section>

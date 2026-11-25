@@ -168,9 +168,15 @@ test('Blocked browser storage does not prevent practice', async ({ page }) => {
   await expect(feedback(page).getByText('1/1', { exact: true })).toBeVisible()
 })
 
-test('A short timed set can skip a question and resume at the same step', async ({ page }) => {
+test('The three-month plan opens a timed set that can skip and resume questions', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('link', { name: 'Chọn bộ luyện' }).click()
+  const plan = page.getByRole('region', { name: 'Lộ trình 3 tháng' })
+  const stages = plan.getByRole('listitem')
+  await expect(stages).toHaveCount(3)
+  for (let index = 0; index < 3; index += 1) {
+    await expect(stages.nth(index).getByText(`Tháng ${index + 1}`, { exact: true })).toBeVisible()
+  }
+  await stages.nth(2).getByRole('link', { name: 'Chọn bộ luyện' }).click()
   await page.getByRole('link', { name: 'Bắt đầu bộ luyện' }).first().click()
   await expect(page.getByText('Câu 1 / 4 trong bộ')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Luyện có giờ' })).toHaveAttribute('aria-current', 'page')

@@ -356,9 +356,9 @@ progress::-moz-progress-bar { background: var(--skill, var(--accent)); border-ra
 .panel { min-width: 0; padding: clamp(16px, 2.5vw, 26px); }
 .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.48fr) minmax(0, 1fr); gap: 16px; margin-top: 19px; }
 .section-title-row { display: flex; align-items: start; justify-content: space-between; gap: 13px; margin-bottom: 14px; }
-.week-list, .progress-mini { display: grid; gap: 0; }
-.week-list { margin: 0; padding: 0; list-style: none; }
-.week-row {
+.plan-list, .progress-mini { display: grid; gap: 0; }
+.plan-list { margin: 0; padding: 0; list-style: none; }
+.plan-row {
   display: grid;
   grid-template-columns: 57px minmax(0, 1fr) auto;
   align-items: center;
@@ -366,11 +366,11 @@ progress::-moz-progress-bar { background: var(--skill, var(--accent)); border-ra
   padding: 11px 0;
   border-top: 1px solid #f0ecf3;
 }
-.week-index { display: grid; place-items: center; min-height: 29px; padding-inline: 5px; border-radius: 8px; background: var(--accent-light); color: var(--accent); font-size: .74rem; font-weight: 740; text-align: center; }
-.week-info h3, .week-info strong { font-size: .87rem; }
-.week-info small { display: block; margin-top: 2px; color: var(--muted); font-size: .79rem; line-height: 1.48; }
-.week-action, .text-link { color: var(--accent); text-decoration-thickness: .08em; text-underline-offset: .2em; font-size: .83rem; font-weight: 700; }
-.week-action:hover, .text-link:hover { color: var(--accent-hover); text-decoration-thickness: .13em; }
+.plan-month { display: grid; place-items: center; min-height: 29px; padding-inline: 5px; border-radius: 8px; background: var(--accent-light); color: var(--accent); font-size: .74rem; font-weight: 740; text-align: center; }
+.plan-info strong { font-size: .87rem; }
+.plan-info small { display: block; margin-top: 2px; color: var(--muted); font-size: .79rem; line-height: 1.48; }
+.plan-action, .text-link { color: var(--accent); text-decoration-thickness: .08em; text-underline-offset: .2em; font-size: .83rem; font-weight: 700; }
+.plan-action:hover, .text-link:hover { color: var(--accent-hover); text-decoration-thickness: .13em; }
 .progress-mini { align-content: start; gap: 9px; }
 .progress-mini .section-title-row { margin-bottom: 4px; }
 .progress-mini p { color: var(--muted); font-size: .84rem; }
@@ -679,8 +679,8 @@ progress::-moz-progress-bar { background: var(--skill, var(--accent)); border-ra
   .skill-card p { font-size: .8rem; }
   .skill-icon { width: 36px; height: 36px; }
   .skill-count { font-size: .71rem; }
-  .week-row { grid-template-columns: 50px minmax(0, 1fr); gap: 4px 8px; }
-  .week-action { grid-column: 2; justify-self: start; }
+  .plan-row { grid-template-columns: 50px minmax(0, 1fr); gap: 4px 8px; }
+  .plan-action { grid-column: 2; justify-self: start; }
   .type-grid, .stats-grid { grid-template-columns: minmax(0, 1fr); }
   .reorder-item { align-items: start; }
   .reorder-actions button { padding-inline: 6px; }
